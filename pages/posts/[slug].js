@@ -1,52 +1,44 @@
-import PostContent from "../../components/posts/post-detail/post-content/post-content.jsx";
+import Head from 'next/head';
+import { Fragment } from 'react';
 
-function PostDetailPage() {
-  return <PostContent />
+import PostContent from '../../components/posts/post-detail/post-content/post-content--finished.jsx';
+import { getPostData, getPostsFiles } from '../../lib/posts-util';
+
+function PostDetailPage(props) {
+  return (
+    <Fragment>
+      <Head>
+        <title>{props.post.title}</title>
+        <meta name='description' content={props.post.excerpt} />
+      </Head>
+      <PostContent post={props.post} />
+    </Fragment>
+  );
 }
 
-export default PostDetailPage
+export function getStaticProps(context) {
+  const { params } = context;
+  const { slug } = params;
 
-// import Head from 'next/head';
-// import { Fragment } from 'react';
+  const postData = getPostData(slug);
 
-// import PostContent from '../../components/posts/post-detail/post-content/post-content.jsx';
-// import { getPostData, getPostsFiles } from '../../lib/posts-util';
+  return {
+    props: {
+      post: postData,
+    },
+    revalidate: 600,
+  };
+}
 
-// function PostDetailPage(props) {
-//   return (
-//     <Fragment>
-//       <Head>
-//         <title>{props.post.title}</title>
-//         <meta name='description' content={props.post.excerpt} />
-//       </Head>
-//       <PostContent post={props.post} />
-//     </Fragment>
-//   );
-// }
+export function getStaticPaths() {
+  const postFilenames = getPostsFiles();
 
-// export function getStaticProps(context) {
-//   const { params } = context;
-//   const { slug } = params;
+  const slugs = postFilenames.map((fileName) => fileName.replace(/\.md$/, ''));
 
-//   const postData = getPostData(slug);
+  return {
+    paths: slugs.map((slug) => ({ params: { slug: slug } })),
+    fallback: false,
+  };
+}
 
-//   return {
-//     props: {
-//       post: postData,
-//     },
-//     revalidate: 600,
-//   };
-// }
-
-// export function getStaticPaths() {
-//   const postFilenames = getPostsFiles();
-
-//   const slugs = postFilenames.map((fileName) => fileName.replace(/\.md$/, ''));
-
-//   return {
-//     paths: slugs.map((slug) => ({ params: { slug: slug } })),
-//     fallback: false,
-//   };
-// }
-
-// export default PostDetailPage;
+export default PostDetailPage;

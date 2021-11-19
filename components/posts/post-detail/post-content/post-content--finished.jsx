@@ -1,15 +1,10 @@
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
-import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
-import atomDark from 'react-syntax-highlighter/dist/cjs/styles/prism/atom-dark';
-import js from 'react-syntax-highlighter/dist/cjs/languages/prism/javascript';
-import css from 'react-syntax-highlighter/dist/cjs/languages/prism/css';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 import PostHeader from '../post-header/post-header.jsx';
 import classes from './post-content.module.css';
-
-SyntaxHighlighter.registerLanguage('js', js);
-SyntaxHighlighter.registerLanguage('css', css);
 
 function PostContent(props) {
   const { post } = props;
@@ -17,7 +12,7 @@ function PostContent(props) {
   const imagePath = `/images/posts/${post.slug}/${post.image}`;
 
   const customRenderers = {
-    // image(image) {
+    // img(image) {
     //   return (
     //     <Image
     //       src={`/images/posts/${post.slug}/${image.src}`}
@@ -27,16 +22,16 @@ function PostContent(props) {
     //     />
     //   );
     // },
-    paragraph(paragraph) {
+    p(paragraph) {
       const { node } = paragraph;
 
-      if (node.children[0].type === 'image') {
+      if (node.children[0].tagName === 'img') {
         const image = node.children[0];
 
         return (
           <div className={classes.image}>
             <Image
-              src={`/images/posts/${post.slug}/${image.url}`}
+              src={`/images/posts/${post.slug}/${image.properties.src}`}
               alt={image.alt}
               width={600}
               height={300}
@@ -49,12 +44,13 @@ function PostContent(props) {
     },
 
     code(code) {
-      const { language, value } = code;
+      const { className, children } = code;
+      const language = className.split('-')[1]; // className is something like language-js => We need the "js" part here
       return (
         <SyntaxHighlighter
           style={atomDark}
           language={language}
-          children={value}
+          children={children}
         />
       );
     },
@@ -63,7 +59,7 @@ function PostContent(props) {
   return (
     <article className={classes.content}>
       <PostHeader title={post.title} image={imagePath} />
-      <ReactMarkdown renderers={customRenderers}>{post.content}</ReactMarkdown>
+      <ReactMarkdown components={customRenderers}>{post.content}</ReactMarkdown>
     </article>
   );
 }
